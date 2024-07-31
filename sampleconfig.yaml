@@ -1,0 +1,14 @@
+
+
+global:
+  check_interval: 60
+
+monitor:
+  - title: fooo
+    id: bar
+    class: ping
+    settings:
+      foo: bar
+    subclasses:
+      - ttr
+      - answer
