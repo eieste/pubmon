@@ -8,7 +8,6 @@ monitor:
     id: bar
     class: ping
     settings:
-      foo: bar
-    subclasses:
-      - ttr
-      - answer
+      timeout: 50
+      count: 10
+      target: "google.de"

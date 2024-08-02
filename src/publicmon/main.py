@@ -9,6 +9,8 @@ from pkg_resources import resource_stream
 from publicmon.contrib.monitor import find_monitor_by_classname
 from jsonschema import validate
 import time
+from collections import namedtuple
+
 
 global RUN_MONITORING
 RUN_MONITORING = True
@@ -16,7 +18,14 @@ RUN_MONITORING = True
 LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 DEFAULT_LOG_LEVEL = "ERROR"
 
-log = logging.getLogger("publicmon")
+LogCollection = namedtuple("LogCollection", ("metric", "app"))
+
+metriclog = logging.getLogger("publicmon")
+appliationlog = logging.getLogger("publicmon")
+
+
+log = LogCollection(metriclog, appliationlog)
+
 
 def get_argparse():
     parser = argparse.ArgumentParser()
@@ -49,17 +58,17 @@ def handle(options):
         log_level = -1
 
     log_level_name = LOG_LEVELS[log_level]
-    log.setLevel(log_level_name)
+    appliationlog.setLevel(log_level_name)
     logging.basicConfig(level=getattr(logging, log_level_name))
-    log.info("Set LogLevel to: "+log_level_name)
+    appliationlog.info("Set LogLevel to: "+log_level_name)
 
-    log.info(f"Load Config from path: {options.config.absolute()}")
+    appliationlog.info(f"Load Config from path: {options.config.absolute()}")
 
     config = load_config(options)
     schedule_handler(config, options)
 
 def schedule_handler(config, options):
-    schedule_start = time.time()
+    schedule_start = -1
     with ThreadPoolExecutor(max_workers=15) as executor:
         while RUN_MONITORING:
             JOB = []
@@ -68,7 +77,7 @@ def schedule_handler(config, options):
 
                     if options.tag is None:
                         cls = find_monitor_by_classname(monitor_config.get("class"))
-                        log.info("Add Job for {}".format(monitor_config.get("title")))
+                        log.app.info("Add Job for {}".format(monitor_config.get("title")))
                         JOB.append(cls(log, options, monitor_config))
                     else:
                         found_at_tag = False
@@ -77,13 +86,21 @@ def schedule_handler(config, options):
                                 found_at_tag = True
                         if found_at_tag:
                             cls = find_monitor_by_classname(monitor_config.get("class"))
-                            log.info("Add Job for {}".format(monitor_config.get("title")))
+                            log.app.info("Add Job for {}".format(monitor_config.get("title")))
                             JOB.append(cls(log, options, monitor_config))
 
-                executor.map(lambda object: object.handle(), JOB)
+                executor.map(error_wrapper, JOB)
                 schedule_start = time.time()
             else:
                 time.sleep(max([config.get("global", dict({})).get("schedule_interval", 20) - (time.time()-schedule_start) - 2, 0]))
+
+def error_wrapper(object):
+    try:
+        object.handle()
+    except Exception as e:
+        appliationlog.exception(e)
+    
+
 
 def main():
     parser = get_argparse()
