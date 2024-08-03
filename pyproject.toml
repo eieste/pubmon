@@ -128,11 +128,11 @@ dependencies = [
 #
 #   $ pip install publicmon[dev]
 #
-# Optional dependencies the project provides. These are commonly 
+# Optional dependencies the project provides. These are commonly
 # referred to as "extras". For a more extensive definition see:
 # https://packaging.python.org/en/latest/specifications/dependency-specifiers/#extras
 [project.optional-dependencies]
-dev = ["check-manifest"]
+dev = ["pre-commit"]
 test = ["coverage"]
 
 # List URLs that are relevant to your project

@@ -1,42 +1,91 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://example.com/product.schema.json",
-    "title": "Product",
-    "description": "A product from Acme's catalog",
+    "title": "PublicMonitor Config",
+    "description": "Describes the Public Monitor configuration",
     "type": "object",
-    "properties": {
-        "global":  {
+    "$defs": {
+        "dimensions": {
+            "type": "array",
+            "additionalProperties": false,
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "name",
+                    "value"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "ping": {
+            "additionalProperties": false,
             "type": "object",
+            "required": [
+                "title",
+                "class"
+            ],
             "properties": {
-                "schedule_interval": {
+                "title": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string",
+                    "enum": [
+                        "ping"
+                    ]
+                },
+                "dimensions": {
+                    "$ref": "#/$defs/dimensions"
+                },
+                "settings": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "timeout": {
+                            "type": "number",
+                            "multipleOf": 1,
+                            "minimum": 10,
+                            "maximum": 86400,
+                            "description": "Value when a PING was detected as Timeout ( as Seconds ) "
+                        },
+                        "count": {
+                            "type": "number"
+                        },
+                        "target": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "properties": {
+        "global": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "check_interval": {
                     "type": "number"
                 }
             }
         },
         "monitor": {
             "type": "array",
+            "additionalProperties": false,
             "items": {
-                "type": "object",
-                "properties": {
-                    "title": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "class": {
-                        "type": "string"
-                    },
-                    "subclasses": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    },
-                    "settings": {
-                        "type": "object"
+                "anyOf": [
+                    {
+                        "$ref": "#/$defs/ping"
                     }
-                }
+                ]
             }
         }
     }

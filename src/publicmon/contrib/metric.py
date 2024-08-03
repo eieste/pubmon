@@ -11,23 +11,24 @@ class Unit(enum.Enum):
     time_ms = "milliseconds"
 
 
-
 class LogMetricJsonEncoder(json.JSONEncoder):
-
     def default(self, obj):
 
         if isinstance(obj, Dimension):
-            return {
-                "name": obj.name,
-                "value": obj.value
-            }
+            return {"name": obj.name, "value": obj.value}
         elif isinstance(obj, Unit):
             return str(obj.value)
         return super().default(obj)
 
 
-
-def log_metric(namespace=None, metric_name=None, unit=None, value=None, dimensions=None, metric_time=None):
+def log_metric(
+    namespace=None,
+    metric_name=None,
+    unit=None,
+    value=None,
+    dimensions=None,
+    metric_time=None,
+):
     metric = {
         "namespace": namespace,
         "name": metric_name,
