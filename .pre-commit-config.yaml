@@ -19,7 +19,7 @@ repos:
       - id: remove-tabs
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.29.1
-    files: 'sampleconfig.yaml'
     hooks:
       - id: check-jsonschema
         args: ["--schemafile", "src/publicmon/assets/config.schema.json"]
+        files: 'sampleconfig.yaml'
