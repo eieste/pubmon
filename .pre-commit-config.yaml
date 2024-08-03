@@ -22,4 +22,4 @@ repos:
     hooks:
       - id: check-jsonschema
         args: ["--schemafile", "src/publicmon/assets/config.schema.json"]
-        files: 'sampleconfig.yaml'
+        files: 'sampleconfig.yaml$'
