@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from publicmon.contrib.basemonitor import BaseMonitor
 from pythonping import ping
 from publicmon.contrib.metric import log_metric, Unit, Dimension

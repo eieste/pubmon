@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 from threading import Thread
 import argparse

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from publicmon.mons import MONITOR_LIST
 
 
