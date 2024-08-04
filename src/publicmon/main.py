@@ -6,6 +6,7 @@ import logging
 import pathlib
 import yaml
 import json
+from publicmon import exporter
 from concurrent.futures import ThreadPoolExecutor
 from pkg_resources import resource_stream
 from publicmon.contrib.monitor import find_monitor_by_classname
@@ -47,6 +48,19 @@ def configure_parser(parser):
     parser.add_argument(
         "-t", "--tag", help="Which Tags should be Runned", type=str, action="append"
     )
+    parser.add_argument(
+        "-d",
+        "--development",
+        "--dev",
+        help="Disables config Validation. used for development",
+        action="store_true",
+    )
+
+    subparser = parser.add_subparsers(
+        dest="module", help="Run Exporter for Metric postprocessing"
+    )
+    export_parser = subparser.add_parser("exporter")
+    exporter.configure_parser(export_parser)
     return parser
 
 
@@ -56,8 +70,19 @@ def load_config(options):
     with options.config.open("r") as fobj:
         config = yaml.load(fobj, yaml.SafeLoader)
 
-    validate(instance=config, schema=config_schema)
+    if not options.development:
+        validate(instance=config, schema=config_schema)
     return config
+
+
+def clean_global_config(global_config):
+    default_config = {
+        "check_interval": 60,
+        "socket_file": "./publicmon.sock",
+        "namespace": "publicmon",
+    }
+    default_config.update(global_config)
+    return default_config
 
 
 def handle(options):
@@ -77,17 +102,22 @@ def handle(options):
     appliationlog.info(f"Load Config from path: {options.config.absolute()}")
 
     config = load_config(options)
-    schedule_handler(config, options)
+    global_config = clean_global_config(config.get("global"))
+
+    if options.module == "exporter":
+        exporter.handle_execute(global_config, options)
+    else:
+        schedule_handler(config, options)
 
 
 def schedule_handler(config, options):
+    global_config = clean_global_config(config.get("global"))
+
     schedule_start = -1
     with ThreadPoolExecutor(max_workers=15) as executor:
         while RUN_MONITORING:
             JOB = []
-            if time.time() - schedule_start > config.get("global", dict({})).get(
-                "schedule_interval", 20
-            ):
+            if time.time() - schedule_start > global_config.get("check_interval", 20):
                 for monitor_config in config.get("monitor", []):
 
                     if options.tag is None:
@@ -95,7 +125,7 @@ def schedule_handler(config, options):
                         log.app.info(
                             "Add Job for {}".format(monitor_config.get("title"))
                         )
-                        JOB.append(cls(log, options, monitor_config))
+                        JOB.append(cls(log, options, monitor_config, global_config))
                     else:
                         found_at_tag = False
                         for tag in options.tag:
@@ -106,7 +136,7 @@ def schedule_handler(config, options):
                             log.app.info(
                                 "Add Job for {}".format(monitor_config.get("title"))
                             )
-                            JOB.append(cls(log, options, monitor_config))
+                            JOB.append(cls(log, options, monitor_config, global_config))
 
                 executor.map(error_wrapper, JOB)
                 schedule_start = time.time()
@@ -114,7 +144,7 @@ def schedule_handler(config, options):
                 time.sleep(
                     max(
                         [
-                            config.get("global", dict({})).get("schedule_interval", 20)
+                            global_config.get("check_interval", 20)
                             - (time.time() - schedule_start)
                             - 2,
                             0,
@@ -128,7 +158,6 @@ def error_wrapper(object):
         object.handle()
     except Exception as e:
         appliationlog.exception(e)
-        print(sys.executable)
         RUN_MONITORING = False
         raise e
 

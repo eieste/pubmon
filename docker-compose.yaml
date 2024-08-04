@@ -1,0 +1,6 @@
+services:
+
+  monitor:
+    image: ghcr.io/eieste/publicmon/publicmonitor:0.0.1
+
+  aws-exporter:

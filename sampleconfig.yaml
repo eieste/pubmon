@@ -1,11 +1,47 @@
 
 global:
-  check_interval: 60
+  check_interval: 150
+  socket_file: /tmp/metrics
+  namespace: "publicmon"
 
 monitor:
-  - title: fooo
+
+  - title: uplink
     class: ping
     settings:
       timeout: 50
       count: 10
       target: "google.de"
+
+  - title: domaincheck
+    class: dns
+    settings:
+      timeout: 5
+      nameservers:
+        - "8.8.8.8"
+      record_type: A
+      record_name: google.de
+      expectations:
+        - name: default
+          regex: google\.de\..*IN\sA\s142\.250\.181\.195$
+
+  - title: http
+    class: http
+    settings:
+      url: "https://google.de/"
+      http_request:
+        method: "GET"
+        header:
+          Foo: Bar
+        allow_redirects: true
+        timeout: 5
+      expected_header:
+        - name: Location
+          regex: google\.de\..*IN\sA\s142\.250\.181\.195$
+
+      expected_body:
+        - name: default
+          regex: google\.de\..*IN\sA\s142\.250\.181\.195$
+
+    tags:
+      - httptest

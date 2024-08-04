@@ -119,7 +119,10 @@ classifiers = [
 dependencies = [
   "pyaml",
   "jsonschema",
-  "pythonping"
+  "pythonping",
+  "dnspython",
+  "requests",
+  "boto3"
 ]
 
 # List additional groups of dependencies here (e.g. development

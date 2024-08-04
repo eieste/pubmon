@@ -25,6 +25,76 @@
                 }
             }
         },
+        "dns": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+                "title",
+                "class"
+            ],
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string",
+                    "enum": [
+                        "dns"
+                    ]
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "dimensions": {
+                    "$ref": "#/$defs/dimensions"
+                },
+                "settings": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "timeout": {
+                            "type": "number",
+                            "multipleOf": 1,
+                            "minimum": 3,
+                            "maximum": 86400,
+                            "description": "Value when a DNSRequest was Timeout ( as Seconds ) "
+                        },
+                        "nameservers": {
+                            "type": "array",
+                            "additionalProperties": false,
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "record_type": {
+                            "type": "string",
+                            "enum": ["A", "CNAME"]
+                        },
+                        "record_name": {
+                            "type": "string"
+                        },
+                        "expectations": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "regex": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "ping": {
             "additionalProperties": false,
             "type": "object",
@@ -42,6 +112,12 @@
                         "ping"
                     ]
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "dimensions": {
                     "$ref": "#/$defs/dimensions"
                 },
@@ -52,7 +128,7 @@
                         "timeout": {
                             "type": "number",
                             "multipleOf": 1,
-                            "minimum": 10,
+                            "minimum": 3,
                             "maximum": 86400,
                             "description": "Value when a PING was detected as Timeout ( as Seconds ) "
                         },
@@ -65,15 +141,114 @@
                     }
                 }
             }
+        },
+        "http": {
+            "additionalProperties": false,
+            "type": "object",
+            "required": [
+                "title",
+                "class"
+            ],
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string",
+                    "enum": [
+                        "http"
+                    ]
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "dimensions": {
+                    "$ref": "#/$defs/dimensions"
+                },
+                "settings": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "url": {
+                            "type": "string"
+                        },
+                        "http_request": {
+                            "type": "object",
+                            "additionalProperties": true,
+                            "properties": {
+                                "method": {
+                                    "type": "string",
+                                    "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+                                },
+                                "header": {
+                                    "type": "object"
+                                },
+                                "body": {
+                                    "type": "string"
+                                },
+                                "allow_redirects": {
+                                    "type": "boolean",
+                                    "default": false
+                                },
+                                "timeout": {
+                                    "type": "number",
+                                    "multipleOf": 1,
+                                    "minimum": 3,
+                                    "maximum": 86400,
+                                    "description": "Value when a PING was detected as Timeout ( as Seconds ) "
+                                }
+                            }
+                        },
+                        "expected_header":{
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "regex": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "expected_body":{
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "regex": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "properties": {
         "global": {
             "type": "object",
             "additionalProperties": false,
+            "required": ["check_interval", "socket_file"],
             "properties": {
                 "check_interval": {
                     "type": "number"
+                },
+                "socket_file": {
+                    "type": "string"
+                },
+                "namespace": {
+                    "type": "string"
                 }
             }
         },
@@ -84,6 +259,12 @@
                 "anyOf": [
                     {
                         "$ref": "#/$defs/ping"
+                    },
+                    {
+                        "$ref": "#/$defs/dns"
+                    },
+                    {
+                        "$ref": "#/$defs/http"
                     }
                 ]
             }
