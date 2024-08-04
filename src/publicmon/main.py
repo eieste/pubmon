@@ -13,6 +13,18 @@ from publicmon.contrib.monitor import find_monitor_by_classname
 from jsonschema import validate
 import time
 from collections import namedtuple
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="https://d23b93c9560badfc269a962c8454a037@o4507720932786177.ingest.de.sentry.io/4507720937177168",
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+)
 
 
 global RUN_MONITORING

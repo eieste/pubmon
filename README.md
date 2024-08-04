@@ -12,6 +12,9 @@
 
 Add Caps
 
+```
 sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' $(which python)
 sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' $(which publicmon)
+```
+
 Resolve Symlinks
