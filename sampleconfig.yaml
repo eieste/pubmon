@@ -1,7 +1,7 @@
 
 global:
   check_interval: 150
-  socket_file: /tmp/metrics
+  socket_file: /tmp/publicmon/metric.sock
   namespace: "publicmon"
 
 monitor:

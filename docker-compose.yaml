@@ -1,6 +1,28 @@
+
+volumes:
+  socketfile:
+
 services:
 
   monitor:
-    image: ghcr.io/eieste/publicmon/publicmonitor:0.0.1
-
+    image: ghcr.io/eieste/pubmon:latest
+    volumes:
+      - socketfile:/tmp/publicmon
+      - ./sampleconfig.yaml:/etc/publicmon/config.yaml
+    command:
+      - "-c"
+      - "/etc/publicmon/config.yaml"
   aws-exporter:
+    image: ghcr.io/eieste/pubmon:latest
+    volumes:
+      - socketfile:/tmp/publicmon
+      - ./sampleconfig.yaml:/etc/publicmon/config.yaml
+    command:
+      - "-c"
+      - "/etc/publicmon/config.yaml"
+      - exporter
+      - aws
+    depends_on:
+      - monitor
+    environment:
+      - AWS_DEFAULT_REGION=eu-central-1
