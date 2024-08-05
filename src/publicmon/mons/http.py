@@ -80,7 +80,7 @@ class HttpMonitor(BaseMonitor):
         self.add_metric(
             Dimension("url", self.setting("url")),
             Dimension("method", http_request_setting.get("method")),
-            metric_name="http_header",
+            metric_name="http_body",
             unit=Unit.count_ones,
             value=expected_body_match_count,
         )

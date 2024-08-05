@@ -32,7 +32,10 @@ class AWSExporter:
         aws_sender = AWSCloudWatchSender(q, self.global_config)
         aws_sender.start()
 
-        while True:
+        while aws_sender.is_alive() and metric_receiver.is_alive():
             if q.qsize() > 0:
                 log.info(f"Queue Size {q.qsize()}")
             time.sleep(0.1)
+
+        aws_sender.join(2)
+        metric_receiver.join(2)

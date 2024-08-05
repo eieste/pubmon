@@ -26,42 +26,40 @@ class AWSCloudWatchSender(threading.Thread):
         buffer = []
         while True:
             item = self.queue.get()
-            try:
-                metric_data = {
-                    "MetricName": item.get("metric_name"),
-                    "Dimensions": list(
-                        map(
-                            lambda dimension: {
-                                "Name": dimension["name"],
-                                "Value": dimension["value"],
-                            },
-                            item.get("dimensions", []),
-                        )
-                    ),
-                    "Timestamp": datetime.datetime.fromtimestamp(int(item.get("time"))),
-                    "Unit": AWSCloudWatchSender.unit_convert(item.get("unit")),
-                }
-                if item.get("statistic"):
-                    stat = item.get("statistic")
-                    metric_data["StatisticValues"] = {
-                        "SampleCount": stat["sample_count"],
-                        "Sum": stat["sum_val"],
-                        "Minimum": stat["min_val"],
-                        "Maximum": stat["max_val"],
-                    }
-                    metric_data["Values"] = item.get("values")
-                    metric_data["Counts"] = item.get("counts")
-                else:
-                    metric_data["Value"] = item["value"]
-
-                if len(buffer) >= 20:
-                    print(buffer)
-                    response = self.client.put_metric_data(
-                        Namespace=self.global_config.get("namespace"), MetricData=buffer
+            
+            metric_data = {
+                "MetricName": item.get("metric_name"),
+                "Dimensions": list(
+                    map(
+                        lambda dimension: {
+                            "Name": dimension["name"],
+                            "Value": dimension["value"],
+                        },
+                        item.get("dimensions", []),
                     )
-                    buffer = []
-                else:
-                    buffer.append(metric_data)
-            except Exception as e:
-                print(e)
+                ),
+                "Timestamp": datetime.datetime.fromtimestamp(int(item.get("time"))),
+                "Unit": AWSCloudWatchSender.unit_convert(item.get("unit")),
+            }
+            if item.get("statistic"):
+                stat = item.get("statistic")
+                metric_data["StatisticValues"] = {
+                    "SampleCount": stat["sample_count"],
+                    "Sum": stat["sum_val"],
+                    "Minimum": stat["min_val"],
+                    "Maximum": stat["max_val"],
+                }
+                metric_data["Values"] = item.get("values")
+                metric_data["Counts"] = item.get("counts")
+            else:
+                metric_data["Value"] = item["value"]
+
+            if len(buffer) >= 20:
+                print(buffer)
+                response = self.client.put_metric_data(
+                    Namespace=self.global_config.get("namespace"), MetricData=buffer
+                )
+                buffer = []
+            else:
+                buffer.append(metric_data)
             self.queue.task_done()
