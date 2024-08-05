@@ -95,13 +95,15 @@ class MetricLogger(threading.Thread):
                 self._client_list.add(con)
 
     def write(self, data):
+        json_str = json.dumps(data, cls=LogMetricJsonEncoder)
 
+        log.info(f"Send: {json_str}")
+        
         with self._client_list_lock:
             closed_sockets = []
 
             for c in self._client_list:
                 try:
-                    json_str = json.dumps(data, cls=LogMetricJsonEncoder)
                     c.sendall((json_str + "\n").encode("utf-8"))
                 except BrokenPipeError as e:
                     closed_sockets.append(c)

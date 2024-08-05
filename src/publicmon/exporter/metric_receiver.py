@@ -26,8 +26,10 @@ class MetricReceiver(threading.Thread):
         self.client = self.connect()
         while True:
             data = self.client.recv(1024).decode("utf-8")
+
             if not data:
                 break
+            
             for entry in data.strip().split("\n"):
 
                 self.queue.put(json.loads(entry))

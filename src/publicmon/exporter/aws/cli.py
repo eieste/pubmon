@@ -24,7 +24,7 @@ class AWSExporter:
         self.global_config = global_config
 
     def handle(self):
-
+        
         q = queue.Queue()
         metric_receiver = MetricReceiver(q, self.global_config)
         metric_receiver.start()
