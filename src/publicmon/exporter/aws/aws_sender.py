@@ -26,7 +26,7 @@ class AWSCloudWatchSender(threading.Thread):
         buffer = []
         while True:
             item = self.queue.get()
-            
+
             metric_data = {
                 "MetricName": item.get("metric_name"),
                 "Dimensions": list(

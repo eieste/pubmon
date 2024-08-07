@@ -28,7 +28,7 @@ class PingMonitor(BaseMonitor):
                     metricarray[str(response.time_elapsed)] = +1
                 else:
                     metricarray[str(response.time_elapsed)] = 1
-            
+
             self.add_metric(
                 Dimension("target", self.setting("target")),
                 metric_name="rtt",
@@ -55,19 +55,14 @@ class PingMonitor(BaseMonitor):
                 metric_time=metric_time,
             )
         else:
-                        
+
             self.add_metric(
                 Dimension("target", self.setting("target")),
                 metric_name="rtt",
                 unit=Unit.time_ms,
                 # value=(ping_response.rtt_avg * 1000),
                 metric_time=metric_time,
-                statistic=Statistic(
-                    sample_count=1,
-                    min_val=-1,
-                    max_val=-1,
-                    sum_val=-1
-                ),
+                statistic=Statistic(sample_count=1, min_val=-1, max_val=-1, sum_val=-1),
                 values=[-1],
                 counts=[1],
             )
@@ -79,4 +74,3 @@ class PingMonitor(BaseMonitor):
                 value=1,
                 metric_time=metric_time,
             )
-            

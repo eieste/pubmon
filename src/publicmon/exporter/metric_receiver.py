@@ -29,7 +29,7 @@ class MetricReceiver(threading.Thread):
 
             if not data:
                 break
-            
+
             for entry in data.strip().split("\n"):
 
                 self.queue.put(json.loads(entry))

@@ -16,7 +16,7 @@ class DnsMonitor(BaseMonitor):
         "record_name": None,
         "timeout": 5,
     }
-    
+
     def handle(self):
         resolve_start = time.time()
         try:
@@ -35,9 +35,13 @@ class DnsMonitor(BaseMonitor):
 
         for expectitem in self.setting("expectations"):
             value = 0
-            if self._failure_state or re.match(
-                r"{}".format(expectitem.get("regex")), answers.rrset.to_text()
-            ) is not None:
+            if (
+                self._failure_state
+                or re.match(
+                    r"{}".format(expectitem.get("regex")), answers.rrset.to_text()
+                )
+                is not None
+            ):
                 value = 1
 
             all_expectations = all_expectations - value
@@ -46,7 +50,6 @@ class DnsMonitor(BaseMonitor):
                 value = -1
                 all_expectations = -1
                 resolve_duration = -1
-
 
             self.add_metric(
                 Dimension("record", expectitem["name"]),

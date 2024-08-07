@@ -55,7 +55,6 @@ class HttpMonitor(BaseMonitor):
         if self._failure_state:
             http_duration = -1
 
-
         self.add_metric(
             Dimension("url", self.setting("url")),
             Dimension("method", http_request_setting.get("method")),
@@ -115,8 +114,11 @@ class HttpMonitor(BaseMonitor):
             try:
                 value = 0
                 if (
-                    self._failure_state or
-                    re.match(r"{}".format(expected_header.get("regex")), response.headers[expected_header.get("name")])
+                    self._failure_state
+                    or re.match(
+                        r"{}".format(expected_header.get("regex")),
+                        response.headers[expected_header.get("name")],
+                    )
                     is not None
                 ):
                     value = 1
@@ -125,7 +127,7 @@ class HttpMonitor(BaseMonitor):
 
             except KeyError:
                 value = -1
-            
+
             if self._failure_state:
                 value = -1
 
@@ -138,10 +140,9 @@ class HttpMonitor(BaseMonitor):
                 value=value,
             )
 
-
         if self._failure_state:
             matched_header_count = -1
-            
+
         self.add_metric(
             Dimension("url", self.setting("url")),
             Dimension("method", http_request_setting.get("method")),
