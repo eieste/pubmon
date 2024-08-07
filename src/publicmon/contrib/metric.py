@@ -79,8 +79,7 @@ class MetricLogger(threading.Thread):
     ):
 
         socket_file = Path(self.global_config.get("socket_file"))
-
-        socket_file.mkdir(parents=True, exist_ok=True)
+        socket_file.parent.mkdir(parents=True, exist_ok=True)
 
         if socket_file.exists():
             socket_file.unlink()

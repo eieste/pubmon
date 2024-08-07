@@ -2,6 +2,7 @@
 import re
 from publicmon.contrib.basemonitor import BaseMonitor
 from dns.resolver import Resolver
+from dns.exception import DNSException
 from publicmon.contrib.metric import Unit, Dimension
 import time
 
@@ -15,27 +16,37 @@ class DnsMonitor(BaseMonitor):
         "record_name": None,
         "timeout": 5,
     }
-
+    
     def handle(self):
         resolve_start = time.time()
-        resolver = Resolver()
-        resolver.nameservers = self.setting("nameservers")
-        resolver.timeout = self.setting("timeout")
-        answers = resolver.resolve(
-            self.setting("record_name"), self.setting("record_type")
-        )
+        try:
+            resolver = Resolver()
+            resolver.nameservers = self.setting("nameservers")
+            resolver.timeout = self.setting("timeout")
+
+            answers = resolver.resolve(
+                self.setting("record_name"), self.setting("record_type")
+            )
+        except DNSException:
+            self._failure_state = True
         resolve_duration = (time.time() - resolve_start) * 1000
 
         all_expectations = len(self.setting("expectations"))
 
         for expectitem in self.setting("expectations"):
-            rrmatch = re.match(
-                r"{}".format(expectitem.get("regex")), answers.rrset.to_text()
-            )
             value = 0
-            if rrmatch is not None:
+            if self._failure_state or re.match(
+                r"{}".format(expectitem.get("regex")), answers.rrset.to_text()
+            ) is not None:
                 value = 1
+
             all_expectations = all_expectations - value
+
+            if self._failure_state:
+                value = -1
+                all_expectations = -1
+                resolve_duration = -1
+
 
             self.add_metric(
                 Dimension("record", expectitem["name"]),

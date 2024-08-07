@@ -21,6 +21,7 @@ class BaseMonitor:
         self.options = options
         self.config = monitor_config
         self.global_config = global_config
+        self._failure_state = False
 
     def setting(self, key, default=NotSet):
         return self.config.get("settings", {}).get(

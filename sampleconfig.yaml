@@ -1,6 +1,6 @@
 
 global:
-  check_interval: 10
+  check_interval: 15
   socket_file: /tmp/publicmon/metric.sock
   namespace: "publicmon"
 
@@ -9,9 +9,11 @@ monitor:
   - title: uplink
     class: ping
     settings:
-      timeout: 50
+      timeout: 1
       count: 10
       target: "google.de"
+    tags:
+      - ping
 
   - title: domaincheck
     class: dns
@@ -24,6 +26,8 @@ monitor:
       expectations:
         - name: default
           regex: google\.de\..*IN\sA\s142\.250\.181\.195$
+    tags:
+      - dns
 
   - title: http
     class: http
