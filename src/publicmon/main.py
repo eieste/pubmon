@@ -61,6 +61,12 @@ def configure_parser(parser):
         "-t", "--tag", help="Which Tags should be Runned", type=str, action="append"
     )
     parser.add_argument(
+        "--threads",
+        help="How many threads area available for Monitoring Jobs",
+        default=10,
+        type=int,
+    )
+    parser.add_argument(
         "-d",
         "--development",
         "--dev",
@@ -126,7 +132,7 @@ def schedule_handler(config, options):
     global_config = clean_global_config(config.get("global"))
 
     schedule_start = -1
-    with ThreadPoolExecutor(max_workers=15) as executor:
+    with ThreadPoolExecutor(max_workers=options.threads) as executor:
         while RUN_MONITORING:
             JOB = []
             if time.time() - schedule_start > global_config.get("check_interval", 20):

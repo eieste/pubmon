@@ -1,6 +1,6 @@
 
 global:
-  check_interval: 150
+  check_interval: 10
   socket_file: /tmp/publicmon/metric.sock
   namespace: "publicmon"
 

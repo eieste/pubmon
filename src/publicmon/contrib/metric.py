@@ -80,11 +80,13 @@ class MetricLogger(threading.Thread):
 
         socket_file = Path(self.global_config.get("socket_file"))
 
+        socket_file.mkdir(parents=True, exist_ok=True)
+
         if socket_file.exists():
             socket_file.unlink()
 
         server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-
+        log.info("Create Socket file {}".format(self.global_config.get("socket_file")))
         server.bind(self.global_config.get("socket_file"))
 
         while not self._THREAD_STOP:
@@ -98,7 +100,7 @@ class MetricLogger(threading.Thread):
         json_str = json.dumps(data, cls=LogMetricJsonEncoder)
 
         log.info(f"Send: {json_str}")
-        
+
         with self._client_list_lock:
             closed_sockets = []
 
