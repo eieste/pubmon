@@ -3,10 +3,13 @@ from pathlib import Path
 import os
 import enum
 import json
+import msgpack
 import time
 import socket
 import threading
 import logging
+import struct
+
 
 log = logging.getLogger(__name__)
 
@@ -47,13 +50,12 @@ class Unit(enum.Enum):
     ratio_percent = "percent"
 
 
-class LogMetricJsonEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, PublicMonJsonObject):
-            return obj.to_json()
-        elif isinstance(obj, Unit):
-            return str(obj.value)
-        return super().default(obj)
+def log_metric_encoder(obj):
+    if isinstance(obj, PublicMonJsonObject):
+        return obj.to_json()
+    elif isinstance(obj, Unit):
+        return str(obj.value)
+    return obj
 
 
 class MetricLogger(threading.Thread):
@@ -96,16 +98,19 @@ class MetricLogger(threading.Thread):
                 self._client_list.add(con)
 
     def write(self, data):
-        json_str = json.dumps(data, cls=LogMetricJsonEncoder)
-
-        log.info(f"Send: {json_str}")
+        packet_payload = msgpack.packb(
+            data, default=log_metric_encoder, use_bin_type=True
+        )
+        packscheme = "H" + str(len(packet_payload)) + "s"
+        packet = struct.pack(packscheme, len(packet_payload), packet_payload)
+        log.info(f"Send: {data}")
 
         with self._client_list_lock:
             closed_sockets = []
 
             for c in self._client_list:
                 try:
-                    c.sendall((json_str + "\n").encode("utf-8"))
+                    c.sendall(packet)
                 except BrokenPipeError as e:
                     closed_sockets.append(c)
 

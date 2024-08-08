@@ -3,15 +3,22 @@ import threading
 import socket
 import json
 import logging
+import struct
+import msgpack
+
 
 log = logging.getLogger(__name__)
 
 
 class MetricReceiver(threading.Thread):
     def __init__(self, queue, config, *args, **kwargs):
+        self._THREAD_STOP = False
         self.queue = queue
         self.config = config
         super(MetricReceiver, self).__init__(*args, **kwargs)
+
+    def stop(self):
+        self._THREAD_STOP = True
 
     def connect(self):
         client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -22,16 +29,20 @@ class MetricReceiver(threading.Thread):
 
         return client
 
-    def run(self):
+    def handle(self):
+
         self.client = self.connect()
-        while True:
-            data = self.client.recv(1024).decode("utf-8")
 
-            if not data:
-                break
-
-            for entry in data.strip().split("\n"):
-
-                self.queue.put(json.loads(entry))
+        while not self._THREAD_STOP:
+            data = self.client.recv(2)
+            pack_len = struct.unpack("H", data)[0]
+            msg = self.client.recv(pack_len)
+            self.queue.put(msgpack.unpackb(msg))
 
         self.client.close()  # close the connection
+
+    def run(self):
+        try:
+            self.handle()
+        except Exception as e:
+            log.exception(e)

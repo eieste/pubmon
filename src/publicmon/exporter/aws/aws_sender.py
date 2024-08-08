@@ -55,7 +55,6 @@ class AWSCloudWatchSender(threading.Thread):
                 metric_data["Value"] = item["value"]
 
             if len(buffer) >= 20:
-                print(buffer)
                 response = self.client.put_metric_data(
                     Namespace=self.global_config.get("namespace"), MetricData=buffer
                 )
