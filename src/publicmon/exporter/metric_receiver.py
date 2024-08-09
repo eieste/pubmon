@@ -5,7 +5,7 @@ import json
 import logging
 import struct
 import msgpack
-
+import time
 
 log = logging.getLogger(__name__)
 
@@ -22,11 +22,7 @@ class MetricReceiver(threading.Thread):
 
     def connect(self):
         client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        try:
-            client.connect(self.config.get("socket_file"))
-        except Exception as e:
-            log.exception(e)
-
+        client.connect(self.config.get("socket_file"))
         return client
 
     def handle(self):
@@ -42,8 +38,17 @@ class MetricReceiver(threading.Thread):
         self.client.close()  # close the connection
 
     def run(self):
-        try:
-            self.handle()
-        except Exception as e:
-            log.exception(e)
-        log.error("Thread Metric Receive Stopped!")
+        while not self._THREAD_STOP:
+            log.warning("Try to Connect and Receive messages")
+            try:
+                self.handle()
+            except Exception as e:
+                log.exception(e)
+
+            try:
+                self.client.close()
+            except Exception as e:
+                log.exception(e)
+
+            log.error("Thread Metric Receive Stopped!")
+            time.sleep(1)
