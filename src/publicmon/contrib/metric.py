@@ -103,7 +103,7 @@ class MetricLogger(threading.Thread):
         )
         packscheme = "H" + str(len(packet_payload)) + "s"
         packet = struct.pack(packscheme, len(packet_payload), packet_payload)
-        log.info(f"Send: {data}")
+        log.debug(f"Send: {data}")
 
         with self._client_list_lock:
             closed_sockets = []

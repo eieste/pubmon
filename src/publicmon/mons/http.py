@@ -38,7 +38,7 @@ class HttpMonitor(BaseMonitor):
                 timeout=http_request_setting.get("timeout", 5),
             )
             status_code = response.status_code
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.RequestException:
             self._failure_state = True
             status_code = -1
             http_duration = -1
