@@ -46,3 +46,4 @@ class MetricReceiver(threading.Thread):
             self.handle()
         except Exception as e:
             log.exception(e)
+        log.error("Thread Metric Receive Stopped!")

@@ -7,6 +7,7 @@ import datetime
 class AWSCloudWatchSender(threading.Thread):
     def __init__(self, queue, global_config, *args, **kwargs):
         self.queue = queue
+        self._THREAD_STOP = False
         self.global_config = global_config
         self.client = boto3.client("cloudwatch")
 
@@ -22,9 +23,12 @@ class AWSCloudWatchSender(threading.Thread):
         if unit == "milliseconds":
             return "Milliseconds"
 
+    def stop(self):
+        self._THREAD_STOP = True
+
     def run(self):
         buffer = []
-        while True:
+        while not self._THREAD_STOP:
             item = self.queue.get()
 
             metric_data = {

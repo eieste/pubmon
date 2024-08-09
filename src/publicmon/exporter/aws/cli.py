@@ -26,6 +26,7 @@ class AWSExporter:
     def handle(self):
 
         q = queue.Queue()
+
         metric_receiver = MetricReceiver(q, self.global_config)
         metric_receiver.start()
 
@@ -36,6 +37,9 @@ class AWSExporter:
             if q.qsize() > 0:
                 log.info(f"Queue Size {q.qsize()}")
             time.sleep(0.1)
+
+        aws_sender.stop()
+        metric_receiver.stop()
 
         aws_sender.join(2)
         metric_receiver.join(2)
